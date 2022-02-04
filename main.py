@@ -1,21 +1,18 @@
 import redfish
 import subprocess
 import redfish
+from utils.redfish import redfishClient
+from config import *
+from utils.file_interface import get_input_list
 
-login_account = "root"
-login_password = "password123456"
-iLO_host = "https://127.0.0.1"
-REDFISH_OBJ = redfish.RedfishClient(base_url=iLO_host,username=login_account, \
-                          password=login_password)
+ip_list, pwd_list = get_input_list(INPUT_IP_LIST)
+for i in range(0, len(ip_list)):
+    login_password = pwd_list[i]
+    iLO_host = ip_list[i]
 
-# Login into the server and create a session
-REDFISH_OBJ.login(auth="session")
-
-# Do a GET on a given path
-response = REDFISH_OBJ.get("/redfish/v1/systems/", None)
-
-# Print out the response
-sys.stdout.write("%s\n" % response)
-
-# Logout of the current session
-REDFISH_OBJ.logout()
+    server = redfishClient(iLO_host, login_password)
+    try :
+        print (server.login())
+        server.update_firmware(VME_FILE_URL)
+    except ValueError as err:
+        print (err)
